@@ -7,9 +7,10 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.github.ryanp102694.model.PubgTelemetryResponse;
 import com.github.ryanp102694.model.PubgTelemetryRequest;
+import com.github.ryanp102694.model.TrainingItem;
 import com.github.ryanp102694.pubgtelemetryparser.TelemetryProcessor;
 import com.github.ryanp102694.pubgtelemetryparser.data.GameData;
-import com.github.ryanp102694.pubgtelemetryparser.service.TrainingDataWriter;
+import com.github.ryanp102694.pubgtelemetryparser.service.TrainingItemBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
     String awsBucket;
 
     @Autowired
-    TrainingDataWriter trainingDataWriter;
+    TrainingItemBuilder trainingItemBuilder;
 
 
     @Override
@@ -51,18 +52,16 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
         S3Object s3Object = s3Client.getObject(awsBucket, pubgTelemetryRequest.getS3TelemetryJsonKey());
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
         TelemetryProcessor telemetryProcessor = new TelemetryProcessor();
-        List<String> trainingDataLines = new ArrayList<>();
-        List<String> labelLines = new ArrayList<>();
+        List<TrainingItem> trainingItems = new ArrayList<>();
         try{
             GameData gameData = telemetryProcessor.processTelemetry(inputStream);
             List<SortedMap<String, String>> dataPointsList = new ArrayList<>(gameData.getPhasedPlayerDataPoints().values());
-            trainingDataLines = trainingDataWriter.getTrainingDataLines(dataPointsList);
-            labelLines = trainingDataWriter.getLabelLines(dataPointsList);
+            trainingItems = trainingItemBuilder.buildTrainingItems(dataPointsList);
 
         }catch(IOException ioException){
             log.error("There was a problem processing telemetry. {}", ioException.getMessage());
         }
 
-        return new PubgTelemetryResponse(trainingDataLines, labelLines);
+        return new PubgTelemetryResponse(trainingItems);
     }
 }

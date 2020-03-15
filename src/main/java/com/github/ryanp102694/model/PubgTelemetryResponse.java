@@ -4,29 +4,19 @@ import java.util.List;
 
 public class PubgTelemetryResponse {
 
-    private List<String> trainingLines;
-    private List<String> labelLines;
+    private List<TrainingItem> trainingItems;
 
     public PubgTelemetryResponse() {}
 
-    public PubgTelemetryResponse(List<String> trainingLines, List<String> labelLines) {
-        this.trainingLines = trainingLines;
-        this.labelLines = labelLines;
+    public PubgTelemetryResponse(List<TrainingItem> trainingItems) {
+        this.trainingItems = trainingItems;
     }
 
-    public List<String> getTrainingLines() {
-        return trainingLines;
+    public List<TrainingItem> getTrainingItems() {
+        return trainingItems;
     }
 
-    public void setTrainingLines(List<String> trainingLines) {
-        this.trainingLines = trainingLines;
-    }
-
-    public List<String> getLabelLines() {
-        return labelLines;
-    }
-
-    public void setLabelLines(List<String> labelLines) {
-        this.labelLines = labelLines;
+    public void setTrainingItems(List<TrainingItem> trainingItems) {
+        this.trainingItems = trainingItems;
     }
 }
