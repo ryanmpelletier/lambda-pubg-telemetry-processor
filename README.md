@@ -34,7 +34,7 @@ The "fooHanlder" deserializes a JSON Foo object, while the "scheduledEventHandle
 ```javascript
 //Foo test event example
 {
-  "s3ObjectUrl": "testValue"
+  "s3TelemetryJsonKey": "testValue"
 }
 
 

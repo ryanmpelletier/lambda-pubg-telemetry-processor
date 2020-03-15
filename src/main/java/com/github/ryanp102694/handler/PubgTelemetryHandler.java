@@ -38,9 +38,9 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
                 .withRegion(Regions.US_EAST_1)
                 .build();
 
-        log.info("Getting S3 Object at {}", pubgTelemetryRequest.getS3ObjectUrl());
+        log.info("Getting S3 Object at {}", pubgTelemetryRequest.getS3TelemetryJsonKey());
 
-        S3Object s3Object = s3Client.getObject(awsBucket, pubgTelemetryRequest.getS3ObjectUrl());
+        S3Object s3Object = s3Client.getObject(awsBucket, pubgTelemetryRequest.getS3TelemetryJsonKey());
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
         TelemetryProcessor telemetryProcessor = new TelemetryProcessor();
         try{
@@ -49,6 +49,6 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
             log.error("There was a problem processing telemetry. {}", ioException.getMessage());
         }
 
-        return new PubgTelemetryResponse("Hello World! " + pubgTelemetryRequest.getS3ObjectUrl());
+        return new PubgTelemetryResponse("Hello World! " + pubgTelemetryRequest.getS3TelemetryJsonKey());
     }
 }
