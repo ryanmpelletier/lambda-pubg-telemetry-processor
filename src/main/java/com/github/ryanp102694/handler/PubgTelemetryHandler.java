@@ -9,12 +9,17 @@ import com.github.ryanp102694.model.PubgTelemetryResponse;
 import com.github.ryanp102694.model.PubgTelemetryRequest;
 import com.github.ryanp102694.pubgtelemetryparser.TelemetryProcessor;
 import com.github.ryanp102694.pubgtelemetryparser.data.GameData;
+import com.github.ryanp102694.pubgtelemetryparser.service.TrainingDataWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
 import java.util.function.Function;
 
 //set a FUNCTION_NAME environment variable to pubgTelemetryHandler to trigger this
@@ -25,6 +30,9 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
 
     @Value("${aws.bucket}")
     String awsBucket;
+
+    @Autowired
+    TrainingDataWriter trainingDataWriter;
 
 
     @Override
@@ -43,12 +51,18 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
         S3Object s3Object = s3Client.getObject(awsBucket, pubgTelemetryRequest.getS3TelemetryJsonKey());
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
         TelemetryProcessor telemetryProcessor = new TelemetryProcessor();
+        List<String> trainingDataLines = new ArrayList<>();
+        List<String> labelLines = new ArrayList<>();
         try{
             GameData gameData = telemetryProcessor.processTelemetry(inputStream);
+            List<SortedMap<String, String>> dataPointsList = new ArrayList<>(gameData.getPhasedPlayerDataPoints().values());
+            trainingDataLines = trainingDataWriter.getTrainingDataLines(dataPointsList);
+            labelLines = trainingDataWriter.getLabelLines(dataPointsList);
+
         }catch(IOException ioException){
             log.error("There was a problem processing telemetry. {}", ioException.getMessage());
         }
 
-        return new PubgTelemetryResponse("Hello World! " + pubgTelemetryRequest.getS3TelemetryJsonKey());
+        return new PubgTelemetryResponse(trainingDataLines, labelLines);
     }
 }
