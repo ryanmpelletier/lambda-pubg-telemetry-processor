@@ -5,6 +5,8 @@ public class TrainingItem {
     private String trainingData;
     private String label;
 
+    public TrainingItem() {}
+
     public TrainingItem(String trainingData, String label) {
         this.trainingData = trainingData;
         this.label = label;
