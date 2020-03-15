@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    function:
+      scan:
+        packages: com.github.ryanp102694
+aws:
+  bucket: ""
