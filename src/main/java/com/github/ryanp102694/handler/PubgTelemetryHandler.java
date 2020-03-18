@@ -62,6 +62,7 @@ public class PubgTelemetryHandler implements Function<PubgTelemetryRequest, Pubg
             log.error("There was a problem processing telemetry. {}", ioException.getMessage());
         }
 
+        log.info("Finished processing telemetry, there are {} training items", trainingItems != null ? trainingItems.size() : 0);
         return new PubgTelemetryResponse(trainingItems);
     }
 }
