@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 //set a FUNCTION_NAME environment variable to pubgTelemetryS3KeyFinder to trigger this
 @Component("pubgTelemetryS3KeyFinder")
-public class PubgTelemetryS3KeyFinder implements Function<PubgTelemetryS3KeyFinderRequest, List<TrainingItem>> {
+public class PubgTelemetryS3KeyFinder implements Function<PubgTelemetryS3KeyFinderRequest, String> {
 
     private final static Logger log = LoggerFactory.getLogger(PubgTelemetryS3KeyFinder.class);
 
@@ -43,7 +43,7 @@ public class PubgTelemetryS3KeyFinder implements Function<PubgTelemetryS3KeyFind
      * @return
      */
     @Override
-    public List<TrainingItem> apply(PubgTelemetryS3KeyFinderRequest pubgTelemetryS3KeyFinderRequest) {
+    public String apply(PubgTelemetryS3KeyFinderRequest pubgTelemetryS3KeyFinderRequest) {
 
 
         log.info("Creating Amazon S3 client for bucket {} in region {}",
@@ -112,9 +112,23 @@ public class PubgTelemetryS3KeyFinder implements Function<PubgTelemetryS3KeyFind
                 .map(PubgTelemetryResponse::getTrainingItems)
                 .forEach(trainingItems::addAll);
 
+        StringBuilder trainingDataBuilder = new StringBuilder();
+        StringBuilder labelDataBuilder = new StringBuilder();
+
+        for(TrainingItem trainingItem : trainingItems){
+            trainingDataBuilder.append(trainingItem.getTrainingData()).append('\n');
+            labelDataBuilder.append(trainingItem.getLabel()).append('\n');
+        }
+
+        trainingDataBuilder.setLength(trainingDataBuilder.length() - 1);
+        labelDataBuilder.setLength(trainingDataBuilder.length() - 1);
+
+        s3Client.putObject(awsBucket, "training.csv", trainingDataBuilder.toString());
+        s3Client.putObject(awsBucket, "labels.csv", labelDataBuilder.toString());
+
         log.info("Collected {} training items from {} lambda calls.", trainingItems.size(), lambdaCallables.size());
 
 
-        return trainingItems;
+        return "Collected " + trainingItems.size() + " training items from " + lambdaCallables.size() + " lambda calls.";
     }
 }

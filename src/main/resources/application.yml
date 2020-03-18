@@ -5,3 +5,5 @@ spring:
         packages: com.github.ryanp102694
 aws:
   bucket: ""
+  lambda:
+    concurrency: 50
